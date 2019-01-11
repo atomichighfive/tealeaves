@@ -69,4 +69,4 @@ def demo_dataframe_plot():
   games.loc[np.random.choice(np.arange(0,games.shape[0],1), int(games.shape[0]*0.05), replace=False), 'Platform'] = ""
   games.loc[np.random.choice(np.arange(0,games.shape[0],1), int(games.shape[0]*0.05), replace=False), 'Global_Sales'] = -1
   dataframe_plot(games)
-  plt.savefig("demo_dataframe_plot.png")
+  plt.savefig("sample_data/demo_dataframe_plot.png")
