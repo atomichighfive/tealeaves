@@ -7,7 +7,7 @@ from math import sqrt
 from matplotlib import pyplot as plt
 
 #%%
-def index_value_plot(df, columns = None, target = None, subfigsize = (10,10), dpi=150, verbose=False):
+def index_value_plot(df, test_df = None, columns = None, target = None, subfigsize = (10,10), dpi=150, verbose=False):
     if columns is None:
         columns = [c for c in df.columns if np.issubdtype(df[c], np.number)]
     else:
@@ -21,6 +21,9 @@ def index_value_plot(df, columns = None, target = None, subfigsize = (10,10), dp
         if verbose:
             print("column %d : %s" % (i, c))
         plt.subplot(subplot_rows, subplot_cols, i+1)
+        if test_df is not None:
+            sns.scatterplot(x=test_df[c], y=test_df.index,
+                color='gray', alpha=1.0/3.0, linewidth=0)
         sns.scatterplot(
             x=df[c], y=df.index, 
             hue=(df[target] if target is not None else None),
@@ -34,5 +37,5 @@ def demo_index_value_plot():
     games.loc[np.random.choice(np.arange(0,games.shape[0],1), int(games.shape[0]*0.05), replace=False), 'Platform'] = ""
     games.loc[np.random.choice(np.arange(0,games.shape[0],1), int(games.shape[0]*0.05), replace=False), 'Global_Sales'] = -1
     print(games.columns)
-    index_value_plot(games, target='Platform')
+    index_value_plot(games.iloc[0:2*int(len(games)/3)], games.iloc[2*int(len(games)/3):len(games)], target='Platform')
     plt.savefig("output/demo_index_value_plot.png")
