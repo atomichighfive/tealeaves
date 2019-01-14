@@ -36,4 +36,3 @@ def demo_index_value_plot():
     print(games.columns)
     index_value_plot(games, columns=['EU_Sales','JP_Sales','NA_Sales'], target='Platform')
     plt.savefig("output/demo_index_value_plot.png")
-

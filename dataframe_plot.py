@@ -4,6 +4,7 @@ import matplotlib.patches as mpatches
 import pandas as pd
 import numpy as np
 import scipy as sc
+import scipy.stats as stats
 
 #%%
 def dataframe_plot(df, quantiles=(0.05, 0.95), rare_category_factor=0.1, rows_per_pixel=1):
@@ -31,7 +32,7 @@ def dataframe_plot(df, quantiles=(0.05, 0.95), rare_category_factor=0.1, rows_pe
     for i, c in enumerate(df.columns):
         if np.issubdtype(df[c], np.number):
             #img[:,i,:] = np.repeat((1/3 + (1/3)*(df[c].values-df[c].min())/(games[c].max()-df[c].min()))[:, np.newaxis], 3, axis=1)
-            ranks = sc.stats.rankdata(df[c].values)
+            ranks = stats.rankdata(df[c].values)
             img[:,i,:] = np.repeat((2/5 + (1/5)*(ranks-ranks.min())/(ranks.max()-ranks.min()))[:, np.newaxis], 3, axis=1)
 
     img[df.isna()] = na_colour
@@ -69,4 +70,4 @@ def demo_dataframe_plot():
     games.loc[np.random.choice(np.arange(0,games.shape[0],1), int(games.shape[0]*0.05), replace=False), 'Platform'] = ""
     games.loc[np.random.choice(np.arange(0,games.shape[0],1), int(games.shape[0]*0.05), replace=False), 'Global_Sales'] = -1
     dataframe_plot(games)
-    plt.savefig("demo_dataframe_plot.png")
+    plt.savefig("output/demo_dataframe_plot.png")
