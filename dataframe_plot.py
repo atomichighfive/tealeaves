@@ -65,8 +65,8 @@ def dataframe_plot(df, quantiles=(0.05, 0.95), rare_category_factor=0.1, rows_pe
     plt.legend(handles=patches, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0. )
 
 def demo_dataframe_plot():
-  games = pd.read_csv('./sample_data/video-game-sales-with-ratings.zip')
-  games.loc[np.random.choice(np.arange(0,games.shape[0],1), int(games.shape[0]*0.05), replace=False), 'Platform'] = ""
-  games.loc[np.random.choice(np.arange(0,games.shape[0],1), int(games.shape[0]*0.05), replace=False), 'Global_Sales'] = -1
-  dataframe_plot(games)
-  plt.savefig("demo_dataframe_plot.png")
+    games = pd.read_csv('./sample_data/video-game-sales-with-ratings.zip')
+    games.loc[np.random.choice(np.arange(0,games.shape[0],1), int(games.shape[0]*0.05), replace=False), 'Platform'] = ""
+    games.loc[np.random.choice(np.arange(0,games.shape[0],1), int(games.shape[0]*0.05), replace=False), 'Global_Sales'] = -1
+    dataframe_plot(games)
+    plt.savefig("demo_dataframe_plot.png")
