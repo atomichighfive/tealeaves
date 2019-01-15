@@ -75,10 +75,3 @@ def demo_dataframe_plot():
     dataframe_plot(games, rows_per_pixel=15, extra_test_dict={"PS3":np.array([0,0,255])/255})
     plt.savefig("output/demo_dataframe_plot.png")
 
-#%%
-demo_dataframe_plot()
-
-#%%
-
-
-#%%
