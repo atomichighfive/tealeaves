@@ -40,5 +40,7 @@ def demo_index_value_plot():
     index_value_plot(
         games.iloc[1*int(len(games)/3):len(games)].reset_index(drop=True),
         games.iloc[0:1*int(len(games)/3)].reset_index(drop=True),
-        target='Platform', subfigsize=(5,5))
+        target='Rating')
     plt.savefig("output/demo_index_value_plot.png")
+
+#%%
