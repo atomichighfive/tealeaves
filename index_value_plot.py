@@ -7,7 +7,7 @@ from math import sqrt
 from matplotlib import pyplot as plt
 
 #%%
-def index_value_plot(df, test_df = None, columns = None, target = None, subfigsize = (10,10), dpi=150, verbose=False):
+def index_value_plot(df, test_df = None, columns = None, target = None, subfigsize = (5,5), dpi=150, verbose=False):
     if columns is None:
         columns = [c for c in df.columns if np.issubdtype(df[c], np.number)]
     else:
@@ -37,5 +37,8 @@ def demo_index_value_plot():
     games.loc[np.random.choice(np.arange(0,games.shape[0],1), int(games.shape[0]*0.05), replace=False), 'Platform'] = ""
     games.loc[np.random.choice(np.arange(0,games.shape[0],1), int(games.shape[0]*0.05), replace=False), 'Global_Sales'] = -1
     print(games.columns)
-    index_value_plot(games.iloc[1*int(len(games)/3):len(games)].reset_index(drop=True), games.iloc[0:1*int(len(games)/3)].reset_index(drop=True), target='Platform')
+    index_value_plot(
+        games.iloc[1*int(len(games)/3):len(games)].reset_index(drop=True),
+        games.iloc[0:1*int(len(games)/3)].reset_index(drop=True),
+        target=None ,subfigsize=(3,3))
     plt.savefig("output/demo_index_value_plot.png")
