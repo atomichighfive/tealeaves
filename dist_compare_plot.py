@@ -7,14 +7,30 @@ import scipy as sc
 import seaborn as sns
 import scipy.stats as stats
 from math import sqrt
+from histogram_bin_formulas import bin_it
 
-def dist_compare_plot(df_train, df_test, columns=None, xlim_quantiles=(0.025,0.975), max_categories=40, subfigsize=(8,4), dpi=150):
+def dist_compare_plot(df_train, df_test, columns=None,
+                      histogram=False, kde=True, rug=False, bins={},
+                      xlim_quantiles=(0.025,0.975),
+                      max_categories=40, subfigsize=(8,4),
+                      dpi=150, hist_kws = {"alpha": 0.5},
+                      kde_kws = {"shade": True}):
     if columns is None:
         columns = [c for c in df_train.columns if c in df_test.columns]
     else:
-        columns = [c for c in columns if c in df_train.columns & c in df_test.columns]
+        columns = [c for c in columns if c in df_train.columns and c in df_test.columns]
+    df_all = pd.concat([df_train[columns], df_test[columns]])
     if len(columns) < 1:
         raise ValueError("No numeric features to plot.")
+    if type(bins) is int:
+        bins = {c:bins for c in columns if np.issubdtype(df_all[c], np.number)}
+    elif type(bins) is str:
+        bins = {c:bin_it(df_all[c], bins) for c in columns if np.issubdtype(df_all[c], np.number)}
+    elif type(bins) is dict:
+        for c in [c for c in bins.keys() if type(bins[c]) is str]:
+            bins[c] = bin_it(df_all[c].dropna().values, bins[c])
+        for c in [c for c in bins.keys() if type(bins[c]) is int]:
+            bins[c] = np.linspace(df_all[c].min(), df_all[c].max(), bins[c])
     subplot_cols = int(np.ceil(sqrt(len(columns))))
     subplot_rows = int(np.ceil(len(columns)/subplot_cols))
     fig = plt.figure(dpi=dpi, figsize=(subfigsize[0]*subplot_cols, subfigsize[1]*subplot_rows))
@@ -22,8 +38,18 @@ def dist_compare_plot(df_train, df_test, columns=None, xlim_quantiles=(0.025,0.9
         plt.subplot(subplot_rows, subplot_cols, i+1)
         plt.title(str(c))
         if np.issubdtype(df_train[c], np.number) and np.issubdtype(df_test[c], np.number):
-            sns.kdeplot(df_train[c], shade=True)
-            sns.kdeplot(df_test[c], shade=True)
+            if c not in bins.keys():
+                bins[c] = bin_it(df_all[c].dropna().values)
+            sns.distplot(
+                df_train[c].dropna(), hist=histogram, kde=kde,
+                bins=bins[c], hist_kws=hist_kws,
+                kde_kws=kde_kws, rug=rug
+            )
+            sns.distplot(
+                df_test[c].dropna(), hist=histogram, kde=kde,
+                bins=bins[c], hist_kws=hist_kws,
+                kde_kws=kde_kws, rug=rug
+            )
             ll = min(df_train[c].quantile(xlim_quantiles[0]), df_test[c].quantile(xlim_quantiles[0]))
             ul = max(df_train[c].quantile(xlim_quantiles[1]), df_test[c].quantile(xlim_quantiles[1]))
             plt.xlim([ll,ul])
@@ -66,6 +92,7 @@ def demo_dist_compare_plot():
     print(games.columns)
     dist_compare_plot(
         games.iloc[1*int(len(games)/3):len(games)].reset_index(drop=True),
-        games.iloc[0:1*int(len(games)/3)].reset_index(drop=True)
+        games.iloc[0:1*int(len(games)/3)].reset_index(drop=True),
+        histogram=True, kde=True
         )
     plt.savefig("output/demo_dist_compare_plot.png")
