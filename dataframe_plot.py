@@ -66,6 +66,7 @@ def dataframe_plot(df, extra_test_dict = {}, quantiles=(0.05, 0.95), rare_catego
     for label, color in extra_test_dict.items():
         patches.append(mpatches.Patch(color=color, label=label))
     plt.legend(handles=patches, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0. )
+    plt.tight_layout()
 
 def demo_dataframe_plot():
     games = pd.read_csv('./sample_data/video-game-sales-with-ratings.zip')
