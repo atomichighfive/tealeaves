@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from matplotlib import patches as mpatches
 
 # Local imports
-from util.histogram_bin_formulas import bin_it
+from tealeaves.util.histogram_bin_formulas import bin_it
 
 def dataframe_plot(df, extra_test_dict = {}, quantiles=(0.05, 0.95), rare_category_factor=0.1,  rows_per_pixel=1, show_value_ranks = True):
     """
