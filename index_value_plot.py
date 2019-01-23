@@ -1,4 +1,4 @@
-#%%
+
 import pandas as pd
 import numpy as np
 import plotly as plt
@@ -6,7 +6,6 @@ import seaborn as sns
 from math import sqrt
 from matplotlib import pyplot as plt
 
-#%%
 def index_value_plot(df, test_df = None, columns = None, target = None, subfigsize = (5,5), dpi=150, verbose=False):
     if columns is None:
         columns = [c for c in df.columns if np.issubdtype(df[c], np.number)]
@@ -25,7 +24,7 @@ def index_value_plot(df, test_df = None, columns = None, target = None, subfigsi
             sns.scatterplot(x=test_df[c], y=test_df.index,
                 color='gray', alpha=1.0/3.0, linewidth=0)
         sns.scatterplot(
-            x=df[c], y=df.index, 
+            x=df[c], y=df.index,
             hue=(df[target] if target is not None else None),
             alpha=1.0/3.0, linewidth=0)
         plt.title(c)
@@ -42,5 +41,3 @@ def demo_index_value_plot():
         games.iloc[0:1*int(len(games)/3)].reset_index(drop=True),
         target='Rating')
     plt.savefig("output/demo_index_value_plot.png")
-
-#%%
