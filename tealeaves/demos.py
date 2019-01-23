@@ -20,8 +20,6 @@ def demo_dist_compare_plot():
         histogram=True,
         kde=True
     )
-    plt.savefig('/'.join([split(realpath(__file__))[0], 'demos','sample_images','demo_dist_compare_plot.png']))
-
 
 def demo_index_value_plot():
     games, train, test = load_demo_data()
@@ -29,8 +27,6 @@ def demo_index_value_plot():
         train,
         test,
         target='Survived')
-    plt.savefig('/'.join([split(realpath(__file__))[0], 'demos','sample_images','demo_index_value_plot.png']))
-
 
 def demo_dataframe_plot():
     games, train, test = load_demo_data()
@@ -39,4 +35,3 @@ def demo_dataframe_plot():
         rows_per_pixel=1,
         extra_test_dict={13:np.array([0,0,255])/255}
     )
-    plt.savefig('/'.join([split(realpath(__file__))[0], 'demos','sample_images','demo_dataframe_plot.png']))
