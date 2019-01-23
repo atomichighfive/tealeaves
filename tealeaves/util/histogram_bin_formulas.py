@@ -54,6 +54,7 @@ def histogram_freedman_diaconis_formula(values):
 
 # Author: Andreas Syrén
 def bin_it(values, formula='freedman_diaconis'):
+    values = [v for v in values if np.isfinite(v)]
     if formula == 'square':
         bins, bin_width = histogram_square_formula(values)
     elif formula == 'sturges':
@@ -66,4 +67,4 @@ def bin_it(values, formula='freedman_diaconis'):
         bins, bin_width = histogram_freedman_diaconis_formula(values)
     else:
         raise ValueError("\"%s\" not in implemented formulas." % str(formula))
-    return np.linspace(np.min(values), np.max(values), bins)
+    return np.linspace(np.min(values), np.max(values), min(500, bins))

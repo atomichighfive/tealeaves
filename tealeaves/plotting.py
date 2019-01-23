@@ -10,7 +10,7 @@ from matplotlib import patches as mpatches
 # Local imports
 from tealeaves.util.histogram_bin_formulas import bin_it
 
-def dataframe_plot(df, extra_test_dict = {}, quantiles=(0.05, 0.95), rare_category_factor=0.1,  rows_per_pixel=1, show_value_ranks = True):
+def dataframe_plot(df, extra_test_dict = {}, quantiles=(0.025, 0.975), rare_category_factor=0.1,  rows_per_pixel=1, show_value_ranks = True):
     """
     Plots a dataframe with colours showinv various anomalous entries
     Parameters
@@ -49,8 +49,8 @@ def dataframe_plot(df, extra_test_dict = {}, quantiles=(0.05, 0.95), rare_catego
     for key in extra_test_dict.keys():
         img[df == key,:] = extra_test_dict[key]
 
-    fig = plt.gcf()
-    fig.set_size_inches(0.3*df.shape[1], df.shape[0]/(fig.dpi*rows_per_pixel))
+    fig = plt.figure()
+    fig.set_size_inches(0.3*df.shape[1], max(4, min(2^15, df.shape[0]/(fig.dpi*rows_per_pixel))))
     plt.imshow(img, aspect='auto')
     plt.grid(axis='x', color='black', linewidth=0.5)
     ax = plt.gca()
@@ -74,7 +74,7 @@ def dataframe_plot(df, extra_test_dict = {}, quantiles=(0.05, 0.95), rare_catego
 
 def dist_compare_plot(df_train, df_test, columns=None,
                       histogram=False, kde=True, rug=False, bins={},
-                      xlim_quantiles=(0.025,0.975),
+                      xlim_quantiles=(0.005,0.995),
                       max_categories=40, subfigsize=(8,4),
                       dpi=150, hist_kws = {"alpha": 0.5},
                       kde_kws = {"shade": True}):
