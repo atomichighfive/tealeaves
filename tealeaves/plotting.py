@@ -1,11 +1,14 @@
 import pandas as pd
 import numpy as np
 import scipy as sc
-import seaborn as sns
 from math import sqrt
 from scipy import stats as stats
 from matplotlib import pyplot as plt
 from matplotlib import patches as mpatches
+from typing import Tuple
+import holoviews as hv
+from holoviews import opts
+import bokeh
 
 # Local imports
 from tealeaves.util.histogram_bin_formulas import bin_it
@@ -72,102 +75,87 @@ def dataframe_plot(df, extra_test_dict = {}, quantiles=(0.025, 0.975), rare_cate
     plt.tight_layout()
 
 
-def dist_compare_plot(df_train, df_test, columns=None,
-                      histogram=False, kde=True, rug=False, bins={},
-                      xlim_quantiles=(0.005,0.995),
-                      max_categories=40, subfigsize=(8,4),
-                      dpi=150, hist_kws = {"alpha": 0.5},
-                      kde_kws = {"shade": True}):
-    if columns is None:
-        columns = [c for c in df_train.columns if c in df_test.columns]
+def dist_compare_plot(seq1, seq2, bins=None, max_bar_categories:int=40):
+    plot_object = None
+    if np.issubdtype(seq1, np.number) and \
+    np.issubdtype(seq2, np.number) and \
+    len(np.unique(np.concatenate((seq1, seq2)))) > 4:
+        if bins is None:
+            bins = bin_it(np.concatenate((seq1.values, seq2.values), axis=0))
+        frequencies1, edges1 = np.histogram(seq1.dropna(), bins, density=True)
+        frequencies2, edges2 = np.histogram(seq2.dropna(), bins, density=True)
+        plot_object = hv.NdOverlay({
+            'df1':hv.Histogram((edges1, frequencies1)),
+            'df2':hv.Histogram((edges2, frequencies2))
+        })
+        plot_object.opts('Histogram',fill_alpha=0.5).redim.label(x='Value')
     else:
-        columns = [c for c in columns if c in df_train.columns and c in df_test.columns]
-    df_all = pd.concat([df_train[columns], df_test[columns]])
-    if len(columns) < 1:
-        raise ValueError("No numeric features to plot.")
-    if type(bins) is int:
-        bins = {c:bins for c in columns if np.issubdtype(df_all[c], np.number)}
-    elif type(bins) is str:
-        bins = {c:bin_it(df_all[c], bins) for c in columns if np.issubdtype(df_all[c], np.number)}
-    elif type(bins) is dict:
-        for c in [c for c in bins.keys() if type(bins[c]) is str]:
-            bins[c] = bin_it(df_all[c].dropna().values, bins[c])
-        for c in [c for c in bins.keys() if type(bins[c]) is int]:
-            bins[c] = np.linspace(df_all[c].min(), df_all[c].max(), bins[c])
-    subplot_cols = int(np.ceil(sqrt(len(columns))))
-    subplot_rows = int(np.ceil(len(columns)/subplot_cols))
-    fig = plt.figure(dpi=dpi, figsize=(subfigsize[0]*subplot_cols, subfigsize[1]*subplot_rows))
-    for i, c in enumerate(columns):
-        plt.subplot(subplot_rows, subplot_cols, i+1)
-        plt.title(str(c))
-        if np.issubdtype(df_train[c], np.number) and np.issubdtype(df_test[c], np.number):
-            if c not in bins.keys():
-                bins[c] = bin_it(df_all[c].dropna().values)
-            sns.distplot(
-                df_train[c].dropna(), hist=histogram, kde=kde,
-                bins=bins[c], hist_kws=hist_kws,
-                kde_kws=kde_kws, rug=rug
-            )
-            sns.distplot(
-                df_test[c].dropna(), hist=histogram, kde=kde,
-                bins=bins[c], hist_kws=hist_kws,
-                kde_kws=kde_kws, rug=rug
-            )
-            ll = min(df_train[c].quantile(xlim_quantiles[0]), df_test[c].quantile(xlim_quantiles[0]))
-            ul = max(df_train[c].quantile(xlim_quantiles[1]), df_test[c].quantile(xlim_quantiles[1]))
-            plt.xlim([ll,ul])
-            plt.legend(["Train", "Test"])
-            plt.xlabel(str(c))
-            plt.ylabel("Probability density")
-        elif not (np.issubdtype(df_train[c], np.number) or np.issubdtype(df_test[c], np.number)):
-            plot_df_train = pd.DataFrame(df_train[c].value_counts()/len(df_train[c]))
-            plot_df_train["Data frame"] = "Train"
-            plot_df_test = pd.DataFrame(df_test[c].value_counts()/len(df_test[c]))
-            plot_df_test["Data frame"] = "Test"
-            plot_df = pd.concat([plot_df_train, plot_df_test])
-            if len(plot_df.index.unique()) < max_categories:
-                ax = sns.barplot(x=plot_df.index, y=c, hue="Data frame", data=plot_df)
-                ax.set_xticklabels(ax.get_xticklabels(),rotation=90)
-            else:
-                train_levels = df_train[c].unique()
-                test_levels = df_test[c].unique()
-                ax = sns.barplot(
-                    y=["Only train", "In both", "Only test"],
-                    x=[
-                        len([t for t in train_levels if t not in test_levels]),
-                        len([t for t in train_levels if t in test_levels]),
-                        len([t for t in test_levels if t not in train_levels])
-                    ]
-                )
-                ax.set_yticklabels(ax.get_yticklabels(),rotation=30)
-                plt.xlabel("Number of levels")
+        plot_df_1 = pd.DataFrame(seq1.value_counts()/len(seq1))
+        plot_df_1["Data frame"] = "df1"
+        plot_df_2 = pd.DataFrame(seq2.value_counts()/len(seq2))
+        plot_df_2["Data frame"] = "df2"
+        plot_df = pd.concat([plot_df_1, plot_df_2]).reset_index()
+        plot_df.columns = ['Category', 'Count', 'Source']
+        if len(plot_df.Category.unique()) < max_bar_categories:
+            plot_object = hv.Bars(plot_df, ['Category', 'Source'], 'Count')
         else:
-            plt.imshow([[[0.33,0.0,0.0]]])
-            plt.text(-0.21,0.05,"Types of dataframe\ncolumns don't agree.\nWhat are you doing?")
-    plt.tight_layout()
+            train_levels = plot_df_1.index.unique()
+            test_levels = plot_df_2.index.unique()
+            plot_object = hv.Bars(
+                (["Only df1", "In both", "Only df2"],
+                 [
+                    len([t for t in train_levels if t not in test_levels]),
+                    len([t for t in train_levels if t in test_levels]),
+                    len([t for t in test_levels if t not in train_levels])
+                ]),
+            ).opts(invert_axes=True)
+    return plot_object
 
 
-def index_value_plot(df, test_df = None, columns = None, target = None, subfigsize = (5,5), dpi=150, verbose=False):
+def dist_compare_grid(df1, df2, columns=None, max_bar_categories:int=40, grid_size:Tuple[int,int]=(900,900)):
     if columns is None:
-        columns = [c for c in df.columns if np.issubdtype(df[c], np.number)]
+        columns = [c for c in df1.columns if c in df2.columns]
     else:
-        columns = [c for c in columns if np.issubdtype(df[c], np.number)]
-    if len(columns) < 1:
-        raise ValueError("No numeric features to plot.")
-    subplot_cols = int(np.ceil(sqrt(len(columns))))
-    subplot_rows = int(np.ceil(len(columns)/subplot_cols))
-    fig = plt.figure(dpi=dpi, figsize=(subfigsize[0]*subplot_cols, subfigsize[1]*subplot_rows))
-    for i, c in enumerate(columns):
-        if verbose:
-            print("column %d : %s" % (i, c))
-        plt.subplot(subplot_rows, subplot_cols, i+1)
-        if test_df is not None:
-            sns.scatterplot(x=test_df[c], y=test_df.index,
-                color='gray', alpha=1.0/3.0, linewidth=0)
-        sns.scatterplot(
-            x=df[c], y=df.index,
-            hue=(df[target] if target is not None else None),
-            alpha=1.0/3.0, linewidth=0)
-        plt.title(c)
-    plt.tight_layout()
-    return fig
+        for c in columns:
+            if c not in df1.columns:
+                raise ValueError('%s is not in df1.columns' % str(c))
+            if c not in df2.columns:
+                raise ValueError('%s is not in df2.columns' % str(c))
+    grid_cols = int(np.ceil(np.sqrt(len(columns))))
+    grid_rows = int(np.ceil(len(columns)/grid_cols))
+    plots = [dist_compare_plot(df1[c], df2[c], max_bar_categories).opts(title=c) for c in columns]
+    grid = hv.Layout(plots).opts(shared_axes=False, normalize=False)
+    grid.cols(grid_cols)
+    # set sizes
+    subplot_size = (int(grid_size[0]/grid_cols), int(grid_size[1]/grid_rows))
+    grid.opts(
+        opts.Histogram(width=subplot_size[0],height=subplot_size[1]),
+        opts.Bars(width=subplot_size[0],height=subplot_size[1])
+    )
+    return grid
+
+
+#def index_value_plot(df, test_df = None, columns = None, target = None, subfigsize = (5,5), dpi=150, verbose=False):
+#    if columns is None:
+#        columns = [c for c in df.columns if np.issubdtype(df[c], np.number)]
+#    else:
+#        columns = [c for c in columns if np.issubdtype(df[c], np.number)]
+#    if len(columns) < 1:
+#        raise ValueError("No numeric features to plot.")
+#    subplot_cols = int(np.ceil(sqrt(len(columns))))
+#    subplot_rows = int(np.ceil(len(columns)/subplot_cols))
+#    fig = plt.figure(dpi=dpi, figsize=(subfigsize[0]*subplot_cols, subfigsize[1]*subplot_rows))
+#    for i, c in enumerate(columns):
+#        if verbose:
+#            print("column %d : %s" % (i, c))
+#        plt.subplot(subplot_rows, subplot_cols, i+1)
+#        if test_df is not None:
+#            sns.scatterplot(x=test_df[c], y=test_df.index,
+#                color='gray', alpha=1.0/3.0, linewidth=0)
+#        sns.scatterplot(
+#            x=df[c], y=df.index,
+#            hue=(df[target] if target is not None else None),
+#            alpha=1.0/3.0, linewidth=0)
+#        plt.title(c)
+#    plt.tight_layout()
+#    return fig

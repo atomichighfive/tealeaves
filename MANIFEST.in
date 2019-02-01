@@ -1,1 +1,2 @@
 include tealeaves/demos/sample_data/titanic.csv
+include LICENSE

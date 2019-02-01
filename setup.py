@@ -18,8 +18,9 @@ setuptools.setup(
           'pandas',
           'numpy',
           'scipy',
-          'seaborn',
           'matplotlib',
+          'holoviews',
+          'bokeh'
       ],
     classifiers=[
         "Programming Language :: Python :: 3",
