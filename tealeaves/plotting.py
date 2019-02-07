@@ -9,6 +9,11 @@ from typing import Tuple
 import holoviews as hv
 from holoviews import opts
 import bokeh
+import networkx as nx
+import string
+import itertools as it
+from sklearn.manifold import MDS
+import dcor
 
 # Local imports
 from tealeaves.util.histogram_bin_formulas import bin_it
@@ -159,3 +164,92 @@ def dist_compare_grid(df1, df2, columns=None, max_bar_categories:int=40, grid_si
 #        plt.title(c)
 #    plt.tight_layout()
 #    return fig
+
+
+def relation_graph(df, distance = 'dcorr', min_corr = None, iterations=20):
+    if distance in ('dcorr', 'distance_correlation'):
+        numeric = [c for c in df.columns if np.issubdtype(df[c], np.number)]
+        corr = pd.DataFrame(
+            data=np.diag(np.ones(len(numeric))),
+            columns = numeric,
+            index = numeric
+        )
+        dist = pd.DataFrame(
+            data=np.diag(np.ones(len(numeric))),
+            columns = numeric,
+            index = numeric
+        )
+        for a, b in it.combinations(numeric, 2):
+            c = dcor.distance_correlation_af_inv(
+                df[[a]].values,
+                df[[b]].values
+            )
+            corr.loc[a,b] = c
+            corr.loc[b,a] = c
+        dist = 1-corr
+        if min_corr is None:
+            min_corr = 0.2
+    elif distance in ('corr', 'correlation'):
+        corr = df.corr()
+        dist = 1-corr.abs()
+        if min_corr is None:
+            min_corr = 0.2
+    else:
+        raise ValueError('Distance %s is not implemented' % distance)
+
+    G = nx.Graph()
+    for n in corr.columns:
+        G.add_node(
+            n
+        )
+
+    for u, v in it.combinations(corr.columns,2):
+        if abs(corr.loc[u,v]) > min_corr:
+            G.add_edge(
+                u, v,
+                corr = corr.loc[u,v],
+            )
+
+    labels = {n:n for n in G.nodes()}
+    edge_labels = {e:'%.2f'%G.edges[e]['corr'] for e in G.edges()}
+
+    pos = MDS(
+        dissimilarity='precomputed',
+        metric=True,
+        n_init=iterations
+    ).fit_transform(dist)
+    pos = np.array(pos)
+    node_pos = {n:p for n, p in zip(dist.columns, pos)}
+
+    nx.draw_networkx_nodes(
+        G, node_pos, node_color='grey', node_size=150
+    )
+    nx.draw_networkx_edges(
+        G, node_pos,
+        edgelist=[e for e in G.edges() if G.edges[e]['corr'] >= 0],
+        edge_color='steelblue', alpha=1.0
+    )
+    nx.draw_networkx_edges(
+        G, node_pos,
+        edgelist=[e for e in G.edges() if G.edges[e]['corr'] < 0],
+        edge_color='indianred', alpha=1.0
+    )
+    nx.draw_networkx_edge_labels(
+        G, node_pos,
+        edge_labels=edge_labels,
+        font_family='monospace'
+    )
+
+    x_scale = np.max(pos[:,1])-np.min(pos[:,1])
+    for c in labels:
+        x,y = node_pos[c]
+        plt.text(
+            x,
+            y+0.295*x_scale/plt.gcf().get_size_inches()[1],
+            s=c,
+            bbox=dict(facecolor='lightblue', alpha=0.2),
+            fontdict=dict(),
+            horizontalalignment='center')
+
+    plt.axis('equal')
+    plt.axis('off')

@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from os.path import realpath, split
 
 # Import functions to demo
-from tealeaves.plotting import dataframe_plot, dist_compare_grid
+from tealeaves.plotting import dataframe_plot, dist_compare_grid, relation_graph
 
 def load_demo_data():
     titanic = pd.read_csv('/'.join([split(realpath(__file__))[0], 'demos','sample_data','titanic.csv']))
@@ -34,4 +34,13 @@ def demo_dataframe_plot():
         titanic,
         rows_per_pixel=1,
         extra_test_dict={13:np.array([0,0,255])/255}
+    )
+
+def demo_relation_graph():
+    titanic, train, test = load_demo_data()
+    relation_graph(
+        titanic,
+        distance = 'dcorr',
+        min_corr = None,
+        iterations=20
     )

@@ -20,7 +20,10 @@ setuptools.setup(
           'scipy',
           'matplotlib',
           'holoviews',
-          'bokeh'
+          'bokeh',
+          'dcor',
+          'scikit-learn',
+          'networkx'
       ],
     classifiers=[
         "Programming Language :: Python :: 3",
