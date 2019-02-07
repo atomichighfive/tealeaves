@@ -58,7 +58,7 @@ def dataframe_plot(df, extra_test_dict = {}, quantiles=(0.025, 0.975), rare_cate
         img[df == key,:] = extra_test_dict[key]
 
     fig = plt.figure()
-    fig.set_size_inches(0.3*df.shape[1], max(4, min(2^15, df.shape[0]/(fig.dpi*rows_per_pixel))))
+    fig.set_size_inches(0.3*df.shape[1], max(4, min(2**15, df.shape[0]/(fig.dpi*rows_per_pixel))))
     plt.imshow(img, aspect='auto')
     plt.grid(axis='x', color='black', linewidth=0.5)
     ax = plt.gca()
