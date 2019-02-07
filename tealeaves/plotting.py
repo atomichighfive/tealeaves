@@ -253,3 +253,4 @@ def relation_graph(df, distance = 'dcorr', min_corr = None, iterations=20):
 
     plt.axis('equal')
     plt.axis('off')
+    plt.tight_layout()
