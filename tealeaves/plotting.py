@@ -27,6 +27,7 @@ def dataframe_plot(
     rare_category_factor=0.1,
     rows_per_pixel=1,
     show_value_ranks=True,
+    fig=None,
 ):
     """
     Plots a dataframe with colours showinv various anomalous entries
@@ -90,7 +91,8 @@ def dataframe_plot(
 
     for key in extra_test_dict.keys():
         img[df == key, :] = extra_test_dict[key]
-    fig = plt.figure()
+    if fig is None:
+        fig = plt.figure()
     if df.shape[0] / (fig.dpi * rows_per_pixel) > 2 ** 14:
         raise ValueError(
             "Too many rows to plot with %f rows per pixel. rows/(dpi * rows_per_pixel) can not be larger than 2^14=16384. dpi=%f, rows_per_pixel=%f, rows=%f."

@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="tealeaves-atomichighfive",
-    version="1.1.1",
+    version="1.1.2",
     author="Andreas Syrén",
     author_email="filipandreassyren@gmail.com",
     description="No-mental-effort data exploration toolbox",
