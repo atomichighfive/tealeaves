@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="tealeaves-atomichighfive",
-    version="1.1.0",
+    version="1.1.1",
     author="Andreas Syrén",
     author_email="filipandreassyren@gmail.com",
     description="No-mental-effort data exploration toolbox",
@@ -15,16 +15,16 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     include_package_data=True,
     install_requires=[
-          'pandas',
-          'numpy',
-          'scipy',
-          'matplotlib',
-          'holoviews',
-          'bokeh',
-          'dcor',
-          'scikit-learn',
-          'networkx'
-      ],
+        "pandas",
+        "numpy",
+        "scipy",
+        "matplotlib",
+        "holoviews",
+        "bokeh",
+        "dcor",
+        "scikit-learn",
+        "networkx",
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
