@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from os.path import realpath, split
 
 # Import functions to demo
-from tealeaves.plotting import dataframe_plot, dist_compare_grid, relation_graph
+from tealeaves.plotting_plotly import dataframe_plot, dist_compare_grid, relation_graph
 
 
 def load_demo_data():
@@ -35,7 +35,7 @@ def demo_dist_compare_grid():
 def demo_dataframe_plot():
     titanic, train, test = load_demo_data()
     dataframe_plot(
-        titanic, rows_per_pixel=1, extra_test_dict={13: np.array([0, 0, 255]) / 255}
+        titanic, rows_per_pixel=1, extra_test_dict={13: "rgb(0.0, 0.0, 255.0)"}
     )
 
 
